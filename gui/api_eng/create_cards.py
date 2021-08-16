@@ -113,4 +113,12 @@ class CreateCards:
             text = text[:pos[0]] + "<b>" + text[pos[0]:pos[1]] + "</b>" + text[pos[1]:]
         return text
 
+    def get_definitions(self, list_of_words):
+        results = [self.api.word_json(word) for word in list_of_words]
+        entries = [entry.LexicalEntry(result).entry_content() for result in results]
+        text = ''
+        for e in entries:
+            text += e
+        return text
+
 

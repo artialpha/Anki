@@ -14,11 +14,16 @@ from aqt import mw
 
 from .api_eng import create_cards as cr
 
+api_file = "api_file.TXT"
+api_path = os.path.dirname(os.path.realpath(__file__))
+api_path = api_path + "\\" + api_file
+
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(508, 302)
+        Form.resize(523, 423)
         self.verticalLayoutWidget = QtWidgets.QWidget(Form)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 0, 91, 31))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
@@ -31,7 +36,7 @@ class Ui_Form(object):
         self.box_language.addItem("")
         self.verticalLayout.addWidget(self.box_language)
         self.horizontalLayoutWidget = QtWidgets.QWidget(Form)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 60, 481, 131))
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 210, 481, 131))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout.setContentsMargins(30, 15, 30, 5)
@@ -44,7 +49,7 @@ class Ui_Form(object):
         self.text_def.setObjectName("text_def")
         self.horizontalLayout.addWidget(self.text_def)
         self.horizontalLayoutWidget_2 = QtWidgets.QWidget(Form)
-        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(9, 210, 239, 31))
+        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(9, 360, 239, 31))
         self.horizontalLayoutWidget_2.setObjectName("horizontalLayoutWidget_2")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_2)
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -56,10 +61,10 @@ class Ui_Form(object):
         self.button_phrasals.setObjectName("button_phrasals")
         self.horizontalLayout_2.addWidget(self.button_phrasals)
         self.button_multiple = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
-        self.button_multiple.setObjectName("button_")
+        self.button_multiple.setObjectName("button_multiple")
         self.horizontalLayout_2.addWidget(self.button_multiple)
         self.horizontalLayoutWidget_3 = QtWidgets.QWidget(Form)
-        self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(269, 210, 221, 31))
+        self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(269, 360, 221, 31))
         self.horizontalLayoutWidget_3.setObjectName("horizontalLayoutWidget_3")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_3)
         self.horizontalLayout_3.setContentsMargins(60, 0, 60, 0)
@@ -68,20 +73,45 @@ class Ui_Form(object):
         self.button_definition.setObjectName("button_definition")
         self.horizontalLayout_3.addWidget(self.button_definition)
         self.label_def = QtWidgets.QLabel(Form)
-        self.label_def.setGeometry(QtCore.QRect(330, 40, 131, 21))
+        self.label_def.setGeometry(QtCore.QRect(330, 190, 131, 21))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.label_def.setFont(font)
         self.label_def.setObjectName("label_def")
         self.label_create = QtWidgets.QLabel(Form)
-        self.label_create.setGeometry(QtCore.QRect(70, 40, 91, 21))
+        self.label_create.setGeometry(QtCore.QRect(70, 190, 91, 21))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.label_create.setFont(font)
         self.label_create.setObjectName("label_create")
         self.label = QtWidgets.QLabel(Form)
-        self.label.setGeometry(QtCore.QRect(90, 190, 81, 16))
+        self.label.setGeometry(QtCore.QRect(90, 340, 81, 16))
         self.label.setObjectName("label")
+        self.text_app_id = QtWidgets.QPlainTextEdit(Form)
+        self.text_app_id.setGeometry(QtCore.QRect(140, 50, 261, 30))
+        self.text_app_id.setObjectName("text_app_id")
+        self.text_app_key = QtWidgets.QPlainTextEdit(Form)
+        self.text_app_key.setGeometry(QtCore.QRect(140, 90, 261, 30))
+        self.text_app_key.setObjectName("text_app_key")
+        self.label_app_id = QtWidgets.QLabel(Form)
+        self.label_app_id.setGeometry(QtCore.QRect(90, 60, 47, 13))
+        self.label_app_id.setObjectName("label_app_id")
+        self.label_app_key = QtWidgets.QLabel(Form)
+        self.label_app_key.setGeometry(QtCore.QRect(90, 100, 47, 13))
+        self.label_app_key.setObjectName("label_app_key")
+        self.line = QtWidgets.QFrame(Form)
+        self.line.setGeometry(QtCore.QRect(0, 30, 531, 16))
+        self.line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line.setObjectName("line")
+        self.line_2 = QtWidgets.QFrame(Form)
+        self.line_2.setGeometry(QtCore.QRect(0, 160, 531, 16))
+        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_2.setObjectName("line_2")
+        self.button_api = QtWidgets.QPushButton(Form)
+        self.button_api.setGeometry(QtCore.QRect(220, 130, 75, 23))
+        self.button_api.setObjectName("button_api")
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -90,6 +120,17 @@ class Ui_Form(object):
         self.button_phrasals.clicked.connect(lambda: self.on_click('phrasal'))
         self.button_multiple.clicked.connect(lambda: self.on_click('abcd'))
 
+        self.button_definition.clicked.connect(lambda: self.get_defs())
+
+        self.button_api.clicked.connect(lambda: self.add_data_api())
+
+        if os.path.exists(api_path):
+            with open(api_path) as f:
+                content = f.readlines()
+                self.app_id = content[0].strip('\n')
+                self.app_key = content [1]
+                self.text_app_id.insertPlainText(self.app_id)
+                self.text_app_key.insertPlainText(self.app_key)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -98,11 +139,23 @@ class Ui_Form(object):
         self.box_language.setItemText(1, _translate("Form", "german"))
         self.button_meaning.setText(_translate("Form", "all meanings"))
         self.button_phrasals.setText(_translate("Form", "phrasals"))
-        self.button_multiple.setText(_translate("Form", "..."))
+        self.button_multiple.setText(_translate("Form", "abcd"))
         self.button_definition.setText(_translate("Form", "get definition"))
         self.label_def.setText(_translate("Form", "word definition"))
         self.label_create.setText(_translate("Form", "create cards"))
         self.label.setText(_translate("Form", "you can add..."))
+        self.label_app_id.setText(_translate("Form", "app id:"))
+        self.label_app_key.setText(_translate("Form", "app key:"))
+        self.button_api.setText(_translate("Form", "add data"))
+
+    def add_data_api(self):
+        with open(api_path, 'w+') as f:
+            self.app_id = self.text_app_id.toPlainText()
+            self.app_key = self.text_app_key.toPlainText()
+
+            f.write(self.app_id + '\n')
+            f.write(self.app_key)
+
 
     def on_click(self, type):
         self.label.setText("wait, cards are being created")
@@ -130,12 +183,10 @@ class Ui_Form(object):
         self.label.setText("done!")
 
     def create_cards(self, list_words, path, type):
-        app_id = 'a25b2974'
-        app_key = 'fa3026e50dddff867874b8293f84b703'
         endpoint = "entries"
         language_code = "en-us"
 
-        create = cr.CreateCards(app_id, app_key, endpoint, language_code)
+        create = cr.CreateCards(self.app_id, self.app_key, endpoint, language_code)
         if type == 'all':
             create.multiple_cards(self.list_of_words(list_words), path)
         elif type == 'phrasal':
@@ -143,10 +194,24 @@ class Ui_Form(object):
         elif type == 'abcd':
             create.create_abcd(list_words, path)
 
-        #self.textEdit_2.insertPlainText(self.textEdit.toPlainText())
+    def get_defs(self):
+        words = self.text_def.toPlainText()
+        words = words.splitlines()
+
+        endpoint = "entries"
+        language_code = "en-us"
+
+        create = cr.CreateCards(self.app_id, self.app_key, endpoint, language_code)
+        defs = create.get_definitions(words)
+
+        self.text_def.clear()
+        self.text_def.insertHtml(defs)
+
+
 
     @staticmethod
     def list_of_words(text):
         list_words = text.splitlines()
         return [x.strip().split() for x in list_words]
+
 

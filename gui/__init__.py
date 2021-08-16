@@ -1,6 +1,6 @@
-from .qt2 import Ui_Form
+from .qt4 import Ui_Form
 
 
 __all__ = [
-    'qt2', 'Ui_Form'
+    'qt4', 'Ui_Form'
 ]
