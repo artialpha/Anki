@@ -11,13 +11,14 @@ class LexicalEntry:
         self.results = results["results"]
         y = []
         for r in self.results:
-            for sen in r["lexicalEntries"][0]["entries"][0]["senses"]:
-                if 'examples' in sen:
-                    y.append([sense.Sense(sen["definitions"][0], example['text'], results['id']) for example in sen["examples"]])
-                    if "subsenses" in sen:
-                        for sub in sen["subsenses"]:
-                            if 'examples' in sub:
-                                y.append([sense.Sense(sub["definitions"][0], ex['text'], results['id']) for ex in sub["examples"]])
+            for entry in r["lexicalEntries"]:
+                for sen in entry["entries"][0]["senses"]:
+                    if 'examples' in sen:
+                        y.append([sense.Sense(sen["definitions"][0], example['text'], results['id']) for example in sen["examples"]])
+                        if "subsenses" in sen:
+                            for sub in sen["subsenses"]:
+                                if 'examples' in sub:
+                                    y.append([sense.Sense(sub["definitions"][0], ex['text'], results['id']) for ex in sub["examples"]])
         self.senses = list(itertools.chain.from_iterable(y))
 
     def entry_content(self):

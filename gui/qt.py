@@ -127,10 +127,11 @@ class Ui_Form(object):
         if os.path.exists(api_path):
             with open(api_path) as f:
                 content = f.readlines()
-                self.app_id = content[0].strip('\n')
-                self.app_key = content [1]
-                self.text_app_id.insertPlainText(self.app_id)
-                self.text_app_key.insertPlainText(self.app_key)
+                if content:
+                    self.app_id = content[0].strip('\n')
+                    self.app_key = content [1]
+                    self.text_app_id.insertPlainText(self.app_id)
+                    self.text_app_key.insertPlainText(self.app_key)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate

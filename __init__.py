@@ -17,7 +17,7 @@ def testFunction() -> None:
     mw.widget.show()
 
 # create a new menu item, "test"
-action = QAction("drugi", mw)
+action = QAction("english-api", mw)
 # set it to call testFunction when it's clicked
 qconnect(action.triggered, testFunction)
 # and add it to the tools menu
