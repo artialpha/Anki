@@ -9,10 +9,10 @@ class Sense:
     def __init__(self, definition, example, word):
         self.word = word
         self.definition = definition + '<div>' + ipa.convert(definition) + '<div>'
-        self.definition = self.definition.replace(";", ",")
+        self.definition = self.definition.replace(",", " ").replace(";", ",")
         self.example = example
-        self.example = self.example.replace(";", ",")
-        self.ipa = ipa.convert(example)
+        self.example = self.example.replace(",", " ").replace(";", ",")
+        self.ipa = ipa.convert(self.example)
 
     def sense_content(self):
         return '<div>' + self.definition + '<div>' + self.example + '<div>' + self.ipa
