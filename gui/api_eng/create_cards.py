@@ -34,9 +34,9 @@ class CreateCards:
 
         for sense in senses:
             self.write_to_file_card(
-                senwe=self.delete_inflected_word(sense.word, sense.example),
+                senwe=self.delete_inflected_word(sense.word, sense.example) if sense.example else 'no example;',
                 question_line=words_string+";",
-                sentence_embolden=CreateCards.embolden(sense.word, sense.example) + ";",
+                sentence_embolden=CreateCards.embolden(sense.word, sense.example) + ";" if sense.example else 'no example;',
                 words=sense.word+";",
                 definition=sense.definition + ";",
                 ipa=sense.ipa + ";",
@@ -58,9 +58,9 @@ class CreateCards:
             word_to_delete = word[0]
         for sense in entries.senses:
             self.write_to_file_card(
-                senwe=self.delete_inflected_word(word_to_delete, sense.example),
+                senwe=self.delete_inflected_word(word_to_delete, sense.example) if sense.example else "no example;",
                 question_line=self.question_line(word),
-                sentence_embolden=CreateCards.embolden(word[0], sense.example) + ";",
+                sentence_embolden=CreateCards.embolden(word[0], sense.example) + ";" if sense.example else "no example;",
                 words=word[1]+";",
                 definition=sense.definition + ";",
                 ipa=sense.ipa + ";",
