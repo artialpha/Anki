@@ -22,6 +22,10 @@ class CreateCards:
         result = self.api.word_json(word[0][0])
         self.multiple_cards(entry.LexicalEntry(result).phrasal_verbs(), path)
 
+    def create_phrases(self, word):
+        result = self.api.word_json(word[0][0])
+        self.multiple_cards(entry.LexicalEntry(result).phrases())
+
     def create_abcd(self, words_string, path):
         words = words_string.split('/')
         results = [self.api.word_json(word) for word in words]
