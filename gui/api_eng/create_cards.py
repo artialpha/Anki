@@ -22,9 +22,9 @@ class CreateCards:
         result = self.api.word_json(word[0][0])
         self.multiple_cards(entry.LexicalEntry(result).phrasal_verbs(), path)
 
-    def create_phrases(self, word):
+    def create_phrases(self, word, path):
         result = self.api.word_json(word[0][0])
-        self.multiple_cards(entry.LexicalEntry(result).phrases())
+        self.multiple_cards(entry.LexicalEntry(result).phrases(), path)
 
     def create_abcd(self, words_string, path):
         words = words_string.split('/')
@@ -47,7 +47,6 @@ class CreateCards:
                 all_senses=CreateCards.embolden(sense.word, all_senses) + "\n",
                 path_file=path
             )
-
 
     def one_card(self, word, path):
         result = self.api.word_json(word[0])
@@ -124,5 +123,8 @@ class CreateCards:
         for e in entries:
             text += e
         return text
+
+
+
 
 
