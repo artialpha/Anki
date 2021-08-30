@@ -20,7 +20,7 @@ class LexicalEntry:
         for r in self.results["results"]:
             for entry in r["lexicalEntries"]:
                 for sen in entry["entries"][0]["senses"]:
-                    if 'examples' in sen:
+                    if 'examples' in sen and 'definitions' in sen:
                         y.append([sense.Sense(sen["definitions"][0], example['text'], unquote(self.results['id'])) for
                                   example in sen["examples"]])
                         if "subsenses" in sen:
@@ -40,8 +40,8 @@ class LexicalEntry:
     def entry_content(self):
         content = ""
         for count, value in enumerate(self.senses, 1):
-            content += '<div>' + str(count) + " " + '<b>' + unquote(value.word) + ' ' + ipa.convert(value.word) + '</b>' \
-                       + '<div>' + value.sense_content() + '<div> '
+            content += '<div>' + str(count) + " " + '<b>' + unquote(value.word) + ' ' \
+                       + ipa.convert(value.word.replace('_', ' ')) + '</b>' + '<div>' + value.sense_content() + '<div> '
             content += '<hr>'
         return content
 

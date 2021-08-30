@@ -132,7 +132,8 @@ class Ui_Form(object):
         self.button_multiple.clicked.connect(lambda: self.on_click('abcd'))
         self.button_phrases.clicked.connect(lambda: self.on_click('phrases'))
 
-        self.button_definition.clicked.connect(lambda: self.get_defs())
+        self.button_definition.clicked.connect(lambda: self.get_def())
+        self.button_phr_get.clicked.connect(lambda: self.get_phr())
 
         self.button_api.clicked.connect(lambda: self.add_data_api())
 
@@ -170,7 +171,6 @@ class Ui_Form(object):
 
             f.write(self.app_id + '\n')
             f.write(self.app_key)
-
 
     def on_click(self, type):
         self.label.setText("wait, cards are being created")
@@ -211,7 +211,7 @@ class Ui_Form(object):
         elif type == 'phrases':
             create.create_phrases(self.list_of_words(list_words), path)
 
-    def get_defs(self):
+    def get_def(self):
         words = self.text_def.toPlainText()
         words = words.splitlines()
 
@@ -223,6 +223,19 @@ class Ui_Form(object):
 
         self.text_def.clear()
         self.text_def.insertHtml(defs)
+
+    def get_phr(self):
+        words = self.text_def.toPlainText()
+        words = words.splitlines()
+
+        endpoint = "entries"
+        language_code = "en-us"
+
+        create = cr.CreateCards(self.app_id, self.app_key, endpoint, language_code)
+        phrases = create.get_phrases(words)
+
+        self.text_def.clear()
+        self.text_def.insertHtml(phrases)
 
     @staticmethod
     def list_of_words(text):

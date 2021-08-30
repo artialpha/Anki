@@ -4,6 +4,7 @@ from . import group_entries as group
 import io
 import re
 from . import pyinflect
+import itertools
 
 __all__ = [
     'api', 'entry', 'group', 'pyinflect'
@@ -56,18 +57,18 @@ class CreateCards:
             print(x.sense_content())
 
         if '_' in word[0]:
-            word_to_delete = word[0].split('_')[1]
+            word_to_delete = word[0].split('_')[1:]
         else:
-            word_to_delete = word[0]
+            word_to_delete = [word[0]]
         for sense in entries.senses:
             self.write_to_file_card(
                 senwe=self.delete_inflected_word(word_to_delete, sense.example) if sense.example else "no example;",
                 question_line=self.question_line(word),
-                sentence_embolden=CreateCards.embolden(word[0], sense.example) + ";" if sense.example else "no example;",
+                sentence_embolden=CreateCards.embolden(word_to_delete, sense.example) + ";" if sense.example else "no example;",
                 words=word[1]+";",
                 definition=sense.definition + ";",
                 ipa=sense.ipa + ";",
-                all_senses=CreateCards.embolden(word[0], entries.entry_content()) + "\n",
+                all_senses=CreateCards.embolden(word_to_delete, entries.entry_content()) + "\n",
                 path_file=path
             )
 
@@ -93,8 +94,9 @@ class CreateCards:
         return to_write
 
     @staticmethod
-    def inflected_word_list(word):
-        inflected = [x[0] for x in list(pyinflect.getAllInflections(word).values())]
+    def inflected_word_list(words):
+        inflected = [[x[0] for x in list(pyinflect.getAllInflections(w).values())] for w in words]
+        inflected = list(itertools.chain(*inflected))
         inflected.extend([x.capitalize() for x in inflected])
         return list(set(inflected))
 
@@ -124,7 +126,14 @@ class CreateCards:
             text += e
         return text
 
-
-
+    def get_phrases(self, list_of_words):
+        results = [self.api.word_json(word) for word in list_of_words]
+        entries = [entry.LexicalEntry(result).phrases() for result in results]
+        text = ''
+        for e in entries:
+            for phrase in e:
+                text += '<div>' + phrase[0] + '</div>'
+            text += '<hr>'
+        return text
 
 
