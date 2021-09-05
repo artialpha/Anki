@@ -30,7 +30,7 @@ class CreateCards:
     def create_abcd(self, words_string, path):
         words = words_string.split('/')
         results = [self.api.word_json(word) for word in words]
-        entries = [entry.LexicalEntry(r) for r in results]
+        entries = [entry.LexicalEntry(r).create_senses() for r in results]
         senses = [ent.senses for ent in entries]
         senses = [item for sublist in senses for item in sublist]   #flat_list
         all_senses = ''
@@ -39,13 +39,13 @@ class CreateCards:
 
         for sense in senses:
             self.write_to_file_card(
-                senwe=self.delete_inflected_word(sense.word, sense.example) if sense.example else 'no example;',
+                senwe=self.delete_inflected_word([sense.word], sense.example) if sense.example else 'no example;',
                 question_line=words_string+";",
-                sentence_embolden=CreateCards.embolden(sense.word, sense.example) + ";" if sense.example else 'no example;',
+                sentence_embolden=CreateCards.embolden([sense.word], sense.example) + ";" if sense.example else 'no example;',
                 words=sense.word+";",
                 definition=sense.definition + ";",
                 ipa=sense.ipa + ";",
-                all_senses=CreateCards.embolden(sense.word, all_senses) + "\n",
+                all_senses=CreateCards.embolden([sense.word], all_senses) + "\n",
                 path_file=path
             )
 
@@ -53,8 +53,7 @@ class CreateCards:
         result = self.api.word_json(word[0])
 
         entries = entry.LexicalEntry(result)
-        for x in entries.senses:
-            print(x.sense_content())
+        entries.create_senses()
 
         if '_' in word[0]:
             word_to_delete = word[0].split('_')[1:]
@@ -120,7 +119,9 @@ class CreateCards:
 
     def get_definitions(self, list_of_words):
         results = [self.api.word_json(word) for word in list_of_words]
-        entries = [entry.LexicalEntry(result).entry_content() for result in results]
+        entries = [entry.LexicalEntry(result) for result in results]
+        entries = [ent.create_senses() for ent in entries]
+        entries = [ent.entry_content() for ent in entries]
         text = ''
         for e in entries:
             text += e

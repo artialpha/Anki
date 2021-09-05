@@ -13,7 +13,6 @@ class LexicalEntry:
         #x = [[sense.Sense(x["definitions"][0], example['text']) for example in x["examples"]] for x in senses]
         self.results = results
         self.senses = []
-        self.create_senses()
 
     def create_senses(self):
         y = []
@@ -36,6 +35,7 @@ class LexicalEntry:
                                     if 'definitions' in sub:
                                         y.append([sense.Sense(sub["definitions"][0], '', unquote(self.results['id']))])
         self.senses = list(itertools.chain.from_iterable(y))
+        return self
 
     def entry_content(self):
         content = ""
