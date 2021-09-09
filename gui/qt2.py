@@ -9,6 +9,7 @@
 import os
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from aqt import mw
 
 from .api_eng import create_cards as cr
@@ -17,6 +18,75 @@ api_file = "api_file.TXT"
 api_path = os.path.dirname(os.path.realpath(__file__))
 api_path = api_path + "\\" + api_file
 
+
+class WorkerThreadGet(QThread):
+    update_text = pyqtSignal(str)
+
+    def __init__(self, typ, gui):
+        super().__init__()
+        self.typ = typ
+        self.gui = gui
+
+    def run(self):
+        words = self.gui.text_def.toPlainText()
+        words = words.splitlines()
+
+        self.gui.label.setText("wait...")
+        self.gui.button_meaning.setEnabled(False)
+        self.gui.button_phrasals.setEnabled(False)
+        self.gui.button_multiple.setEnabled(False)
+        self.gui.button_definition.setEnabled(False)
+        self.gui.button_phr_get.setEnabled(False)
+        self.gui.button_phrases.setEnabled(False)
+
+        endpoint = "entries"
+        language_code = "en-us"
+
+        if self.typ == 'def':
+            create = cr.CreateCards(self.gui.app_id, self.gui.app_key, endpoint, language_code)
+            content = create.get_definitions(words)
+        elif self.typ == 'phr':
+            create = cr.CreateCards(self.gui.app_id, self.gui.app_key, endpoint, language_code)
+            content = create.get_phrases(words)
+
+        self.update_text.emit(content)
+        self.gui.label.setText("done!")
+
+
+class WorkerThreadCreate(QThread):
+    def __init__(self, typ, gui):
+        super().__init__()
+        self.typ = typ
+        self.gui = gui
+
+    def run(self):
+        self.gui.label.setText("wait, cards are being created")
+        self.gui.button_meaning.setEnabled(False)
+        self.gui.button_phrasals.setEnabled(False)
+        self.gui.button_multiple.setEnabled(False)
+        self.gui.button_definition.setEnabled(False)
+        self.gui.button_phr_get.setEnabled(False)
+        self.gui.button_phrases.setEnabled(False)
+        file = "file.TXT"
+        path = os.path.dirname(os.path.realpath(__file__))
+        path = path + "\\" + file
+
+        self.gui.create_cards(self.gui.text_create.toPlainText(), path, self.typ)
+
+        # select deck
+        did = mw.col.decks.id("test")
+        mw.col.decks.select(did)
+
+        # anki defaults to the last note type used in the selected deck
+        m = mw.col.models.byName("word formation")
+        deck = mw.col.decks.get(did)
+        deck['mid'] = m['id']
+        mw.col.decks.save(deck)
+
+        # and puts cards in the last deck used by the note type
+        m['did'] = did
+        mw.col.models.save(m)
+        self.gui.label.setText("done!")
 
 
 class Ui_Form(object):
@@ -132,8 +202,8 @@ class Ui_Form(object):
         self.button_multiple.clicked.connect(lambda: self.on_click('abcd'))
         self.button_phrases.clicked.connect(lambda: self.on_click('phrases'))
 
-        self.button_definition.clicked.connect(lambda: self.get_def())
-        self.button_phr_get.clicked.connect(lambda: self.get_phr())
+        self.button_definition.clicked.connect(lambda: self.get('def'))
+        self.button_phr_get.clicked.connect(lambda: self.get('phr'))
 
         self.button_api.clicked.connect(lambda: self.add_data_api())
 
@@ -172,30 +242,18 @@ class Ui_Form(object):
             f.write(self.app_id + '\n')
             f.write(self.app_key)
 
-    def on_click(self, type):
-        self.label.setText("wait, cards are being created")
+    def on_click(self, typ):
+        self.worker = WorkerThreadCreate(typ, self)
+        self.worker.start()
+        self.worker.finished.connect(self.create_cards_finished)
 
-        file = "file.TXT"
-        path = os.path.dirname(os.path.realpath(__file__))
-        path = path + "\\" + file
-
-        self.create_cards(self.text_create.toPlainText(), path, type)
-
-
-        # select deck
-        did = mw.col.decks.id("test")
-        mw.col.decks.select(did)
-
-        # anki defaults to the last note type used in the selected deck
-        m = mw.col.models.byName("word formation")
-        deck = mw.col.decks.get(did)
-        deck['mid'] = m['id']
-        mw.col.decks.save(deck)
-
-        # and puts cards in the last deck used by the note type
-        m['did'] = did
-        mw.col.models.save(m)
-        self.label.setText("done!")
+    def create_cards_finished(self):
+        self.button_meaning.setEnabled(True)
+        self.button_phrasals.setEnabled(True)
+        self.button_multiple.setEnabled(True)
+        self.button_definition.setEnabled(True)
+        self.button_phr_get.setEnabled(True)
+        self.button_phrases.setEnabled(True)
 
     def create_cards(self, list_words, path, type):
         endpoint = "entries"
@@ -211,31 +269,16 @@ class Ui_Form(object):
         elif type == 'phrases':
             create.create_phrases(self.list_of_words(list_words), path)
 
-    def get_def(self):
-        words = self.text_def.toPlainText()
-        words = words.splitlines()
+    def get(self, typ):
+        self.worker = WorkerThreadGet(typ, self)
+        self.worker.start()
+        self.worker.finished.connect(self.create_cards_finished)
+        self.worker.update_text.connect(self.update_area)
 
-        endpoint = "entries"
-        language_code = "en-us"
-
-        create = cr.CreateCards(self.app_id, self.app_key, endpoint, language_code)
-        defs = create.get_definitions(words)
-
+    def update_area(self, val):
         self.text_def.clear()
-        self.text_def.insertHtml(defs)
+        self.text_def.insertHtml(val)
 
-    def get_phr(self):
-        words = self.text_def.toPlainText()
-        words = words.splitlines()
-
-        endpoint = "entries"
-        language_code = "en-us"
-
-        create = cr.CreateCards(self.app_id, self.app_key, endpoint, language_code)
-        phrases = create.get_phrases(words)
-
-        self.text_def.clear()
-        self.text_def.insertHtml(phrases)
 
     @staticmethod
     def list_of_words(text):
