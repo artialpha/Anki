@@ -265,7 +265,9 @@ class Ui_Form(object):
         elif type == 'phrasal':
             create.create_phrasals(self.list_of_words(list_words), path)
         elif type == 'abcd':
-            create.create_abcd(list_words, path)
+            lines = list_words.splitlines()
+            for line in lines:
+                create.create_abcd(line, path)
         elif type == 'phrases':
             create.create_phrases(self.list_of_words(list_words), path)
 
