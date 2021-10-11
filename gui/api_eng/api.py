@@ -12,4 +12,10 @@ class Api:
     def word_json(self, word_id):
         url = "https://od-api.oxforddictionaries.com/api/v2/" + self.end_point + "/" + self.language_code + "/" + word_id.lower()
         r = requests.get(url, headers={"app_id": self.app_id, "app_key": self.app_key})
-        return json.loads(r.text)
+        js = json.loads(r.text)
+
+        if 'error' not in js:
+            return js
+        else:
+            return 'no results for: ' + word_id
+

@@ -11,6 +11,7 @@ import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from aqt import mw
+from PyQt5.QtWidgets import QMessageBox
 
 from .api_eng import create_cards as cr
 
@@ -21,6 +22,7 @@ api_path = api_path + "\\" + api_file
 
 class WorkerThreadGet(QThread):
     update_text = pyqtSignal(str)
+    update_message = pyqtSignal(str)
 
     def __init__(self, typ, gui):
         super().__init__()
@@ -44,12 +46,15 @@ class WorkerThreadGet(QThread):
 
         if self.typ == 'def':
             create = cr.CreateCards(self.gui.app_id, self.gui.app_key, endpoint, language_code)
-            content = create.get_definitions(words)
+            content, message = create.get_definitions(words).values()
+
+
         elif self.typ == 'phr':
             create = cr.CreateCards(self.gui.app_id, self.gui.app_key, endpoint, language_code)
             content = create.get_phrases(words)
 
         self.update_text.emit(content)
+        self.update_message.emit(message)
         self.gui.label.setText("done!")
 
 
@@ -71,6 +76,7 @@ class WorkerThreadCreate(QThread):
         path = os.path.dirname(os.path.realpath(__file__))
         path = path + "\\" + file
 
+        # here i should return the value of the word that has no results
         self.gui.create_cards(self.gui.text_create.toPlainText(), path, self.typ)
 
         # select deck
@@ -89,7 +95,7 @@ class WorkerThreadCreate(QThread):
         self.gui.label.setText("done!")
 
 
-class Ui_Form(object):
+class Ui_Form(QtWidgets.QWidget, object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(500, 449)
@@ -274,12 +280,19 @@ class Ui_Form(object):
     def get(self, typ):
         self.worker = WorkerThreadGet(typ, self)
         self.worker.start()
+
         self.worker.finished.connect(self.create_cards_finished)
         self.worker.update_text.connect(self.update_area)
+        self.worker.update_message.connect(self.update_message)
 
     def update_area(self, val):
         self.text_def.clear()
         self.text_def.insertHtml(val)
+
+    def update_message(self, val):
+        if val:
+            QMessageBox.about(self, "Title", val)
+
 
 
     @staticmethod

@@ -21,11 +21,16 @@ class CreateCards:
 
     def create_phrasals(self, word, path):
         result = self.api.word_json(word[0][0])
-        self.multiple_cards(entry.LexicalEntry(result).phrasal_verbs(), path)
+        if type(result) != str:
+            self.multiple_cards(entry.LexicalEntry(result).phrasal_verbs(), path)
+            return True
+        else:
+            return False
 
     def create_phrases(self, word, path):
         result = self.api.word_json(word[0][0])
-        self.multiple_cards(entry.LexicalEntry(result).phrases(), path)
+        if type(result) != str:
+            self.multiple_cards(entry.LexicalEntry(result).phrases(), path)
 
     def create_abcd(self, words_string, path):
         words = words_string.split('/')
@@ -35,7 +40,7 @@ class CreateCards:
         senses = [item for sublist in senses for item in sublist]   #flat_list
         all_senses = ''
         for ent in entries:
-            all_senses += ent.entry_content()
+            all_senses += ent.entry_content().content
 
         for sense in senses:
             self.write_to_file_card(
@@ -67,7 +72,7 @@ class CreateCards:
                 words=word[1]+";",
                 definition=sense.definition + ";",
                 ipa=sense.ipa + ";",
-                all_senses=CreateCards.embolden(word_to_delete, entries.entry_content()) + "\n",
+                all_senses=CreateCards.embolden(word_to_delete, entries.entry_content().content) + "\n",
                 path_file=path
             )
 
@@ -118,14 +123,22 @@ class CreateCards:
         return text
 
     def get_definitions(self, list_of_words):
-        results = [self.api.word_json(word) for word in list_of_words]
-        entries = [entry.LexicalEntry(result) for result in results]
-        entries = [ent.create_senses() for ent in entries]
-        entries = [ent.entry_content() for ent in entries]
         text = ''
-        for e in entries:
+        no_result = ''
+
+        results = [self.api.word_json(word) for word in list_of_words ]
+        entries = [entry.LexicalEntry(result) for result in results]
+
+        entries = [ent.create_senses() for ent in entries]
+        entries_text = [ent.entry_content().content for ent in entries]
+
+        for ent in entries:
+            if ent.no_result:
+                no_result += ent.no_result + '\n'
+
+        for e in entries_text:
             text += e
-        return text
+        return {'text': text, 'no_result': no_result}
 
     def get_phrases(self, list_of_words):
         results = [self.api.word_json(word) for word in list_of_words]
