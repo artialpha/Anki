@@ -16,26 +16,43 @@ class CreateCards:
         self.api = api.Api(app_id, app_key, endpoint, language_code)
 
     def multiple_cards(self, words, path):
+        errors = []
+        text = ''
         for x in words:
-            self.one_card(x, path)
+            result = self.one_card(x, path)
+            if result:
+                errors.append((result))
+        if errors:
+            for er in errors:
+                text += er + '\n'
+            return text
 
     def create_phrasals(self, word, path):
         result = self.api.word_json(word[0][0])
-        if type(result) != str:
-            self.multiple_cards(entry.LexicalEntry(result).phrasal_verbs(), path)
-            return True
+        list_phrasals = entry.LexicalEntry(result).phrasal_verbs()
+        if not isinstance(list_phrasals, str):
+            self.multiple_cards(list_phrasals, path)
         else:
-            return False
+            return list_phrasals
 
     def create_phrases(self, word, path):
         result = self.api.word_json(word[0][0])
-        if type(result) != str:
+        list_phrases = entry.LexicalEntry(result).phrases()
+        if not isinstance(list_phrases, str):
             self.multiple_cards(entry.LexicalEntry(result).phrases(), path)
+        else:
+            return list_phrases
 
     def create_abcd(self, words_string, path):
+        no_result = ''
         words = words_string.split('/')
         results = [self.api.word_json(word) for word in words]
         entries = [entry.LexicalEntry(r).create_senses() for r in results]
+
+        for ent in entries:
+            if ent.no_result:
+                no_result += ent.no_result + '\n'
+
         senses = [ent.senses for ent in entries]
         senses = [item for sublist in senses for item in sublist]   #flat_list
         all_senses = ''
@@ -54,27 +71,32 @@ class CreateCards:
                 path_file=path
             )
 
+        return no_result
+
     def one_card(self, word, path):
         result = self.api.word_json(word[0])
 
-        entries = entry.LexicalEntry(result)
-        entries.create_senses()
+        if not isinstance(result, str) and len(word) > 1:
+            entries = entry.LexicalEntry(result)
+            entries.create_senses()
 
-        if '_' in word[0]:
-            word_to_delete = word[0].split('_')[1:]
+            if '_' in word[0]:
+                word_to_delete = word[0].split('_')[1:]
+            else:
+                word_to_delete = [word[0]]
+            for sense in entries.senses:
+                self.write_to_file_card(
+                    senwe=self.delete_inflected_word(word_to_delete, sense.example) if sense.example else "no example;",
+                    question_line=self.question_line(word),
+                    sentence_embolden=CreateCards.embolden(word_to_delete, sense.example) + ";" if sense.example else "no example;",
+                    words=word[1]+";",
+                    definition=sense.definition + ";",
+                    ipa=sense.ipa + ";",
+                    all_senses=CreateCards.embolden(word_to_delete, entries.entry_content().content) + "\n",
+                    path_file=path
+                )
         else:
-            word_to_delete = [word[0]]
-        for sense in entries.senses:
-            self.write_to_file_card(
-                senwe=self.delete_inflected_word(word_to_delete, sense.example) if sense.example else "no example;",
-                question_line=self.question_line(word),
-                sentence_embolden=CreateCards.embolden(word_to_delete, sense.example) + ";" if sense.example else "no example;",
-                words=word[1]+";",
-                definition=sense.definition + ";",
-                ipa=sense.ipa + ";",
-                all_senses=CreateCards.embolden(word_to_delete, entries.entry_content().content) + "\n",
-                path_file=path
-            )
+            return result
 
     @staticmethod
     def write_to_file_card(senwe, question_line, sentence_embolden, words, definition, ipa, all_senses, path_file):
@@ -126,7 +148,7 @@ class CreateCards:
         text = ''
         no_result = ''
 
-        results = [self.api.word_json(word) for word in list_of_words ]
+        results = [self.api.word_json(word) for word in list_of_words]
         entries = [entry.LexicalEntry(result) for result in results]
 
         entries = [ent.create_senses() for ent in entries]
@@ -138,16 +160,20 @@ class CreateCards:
 
         for e in entries_text:
             text += e
-        return {'text': text, 'no_result': no_result}
+        return {'text': text, 'message': no_result}
 
     def get_phrases(self, list_of_words):
         results = [self.api.word_json(word) for word in list_of_words]
         entries = [entry.LexicalEntry(result).phrases() for result in results]
         text = ''
+
         for e in entries:
-            for phrase in e:
-                text += '<div>' + phrase[0] + '</div>'
-            text += '<hr>'
-        return text
+            if not isinstance(e, str):
+                for phrase in e:
+                    text += '<div>' + phrase[0] + '</div>'
+                    text += '<hr>'
+            else:
+                text += '<div>' + e + '</div>'
+        return {'text': text, 'message': 'there are no phrases for this entry'}
 
 

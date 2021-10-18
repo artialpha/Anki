@@ -23,12 +23,12 @@ class LexicalEntry:
                 for entry in r["lexicalEntries"]:
                     for sen in entry["entries"][0]["senses"]:
                         if 'examples' in sen and 'definitions' in sen:
-                            y.append([sense.Sense(sen["definitions"][0], example['text'], unquote(self.results['id'])) for
+                            y.append([sense.Sense(sen["definitions"][0], example['text'].strip(), unquote(self.results['id'])) for
                                       example in sen["examples"]])
                             if "subsenses" in sen:
                                 for sub in sen["subsenses"]:
                                     if 'examples' in sub:
-                                        y.append([sense.Sense(sub["definitions"][0], ex['text'],
+                                        y.append([sense.Sense(sub["definitions"][0], ex['text'].strip(),
                                                               unquote(self.results['id'])) for ex in sub["examples"]])
                         else:
                             if 'definitions' in sen:
@@ -51,7 +51,7 @@ class LexicalEntry:
                            + ipa.convert(value.word.replace('_', ' ')) + '</b>' + '<div>' + value.sense_content() + '<div> '
                 self.content += '<hr>'
             else:
-                self.content += '<div>' + 'no results for '+ unquote(value.word) + '<div>'
+                self.content += '<div>' + 'no results for ' + unquote(value.word) + '<div>'
         return self
 
     def entry_content_ent(self):
@@ -67,5 +67,7 @@ class LexicalEntry:
             return self.results
 
     def phrases(self):
-        return [[unquote(lxe['id']), self.results['id']] for lxe in self.results["results"][0]['lexicalEntries'][0]['phrases']]
-
+        try:
+            return [[unquote(lxe['id']), self.results['id']] for lxe in self.results["results"][0]['lexicalEntries'][0]['phrases']]
+        except TypeError:
+            return self.results

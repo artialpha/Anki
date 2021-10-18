@@ -48,10 +48,11 @@ class WorkerThreadGet(QThread):
             create = cr.CreateCards(self.gui.app_id, self.gui.app_key, endpoint, language_code)
             content, message = create.get_definitions(words).values()
 
-
         elif self.typ == 'phr':
             create = cr.CreateCards(self.gui.app_id, self.gui.app_key, endpoint, language_code)
-            content = create.get_phrases(words)
+            content, message = create.get_phrases(words).values()
+
+
 
         self.update_text.emit(content)
         self.update_message.emit(message)
@@ -59,6 +60,8 @@ class WorkerThreadGet(QThread):
 
 
 class WorkerThreadCreate(QThread):
+    update_message = pyqtSignal(str)
+
     def __init__(self, typ, gui):
         super().__init__()
         self.typ = typ
@@ -77,7 +80,7 @@ class WorkerThreadCreate(QThread):
         path = path + "\\" + file
 
         # here i should return the value of the word that has no results
-        self.gui.create_cards(self.gui.text_create.toPlainText(), path, self.typ)
+        message = self.gui.create_cards(self.gui.text_create.toPlainText(), path, self.typ)
 
         # select deck
         did = mw.col.decks.id("test")
@@ -94,6 +97,7 @@ class WorkerThreadCreate(QThread):
         mw.col.models.save(m)
         self.gui.label.setText("done!")
 
+        self.update_message.emit(message)
 
 class Ui_Form(QtWidgets.QWidget, object):
     def setupUi(self, Form):
@@ -252,6 +256,7 @@ class Ui_Form(QtWidgets.QWidget, object):
         self.worker = WorkerThreadCreate(typ, self)
         self.worker.start()
         self.worker.finished.connect(self.create_cards_finished)
+        self.worker.update_message.connect(self.update_message)
 
     def create_cards_finished(self):
         self.button_meaning.setEnabled(True)
@@ -267,15 +272,15 @@ class Ui_Form(QtWidgets.QWidget, object):
 
         create = cr.CreateCards(self.app_id, self.app_key, endpoint, language_code)
         if type == 'all':
-            create.multiple_cards(self.list_of_words(list_words), path)
+            return create.multiple_cards(self.list_of_words(list_words), path)
         elif type == 'phrasal':
-            create.create_phrasals(self.list_of_words(list_words), path)
+            return create.create_phrasals(self.list_of_words(list_words), path)
         elif type == 'abcd':
             lines = list_words.splitlines()
             for line in lines:
-                create.create_abcd(line, path)
+                return create.create_abcd(line, path)
         elif type == 'phrases':
-            create.create_phrases(self.list_of_words(list_words), path)
+            return create.create_phrases(self.list_of_words(list_words), path)
 
     def get(self, typ):
         self.worker = WorkerThreadGet(typ, self)
