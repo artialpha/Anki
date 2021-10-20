@@ -76,7 +76,7 @@ class CreateCards:
     def one_card(self, word, path):
         result = self.api.word_json(word[0])
 
-        if not isinstance(result, str) and len(word) > 1:
+        if not isinstance(result, str):
             entries = entry.LexicalEntry(result)
             entries.create_senses()
 
@@ -89,7 +89,7 @@ class CreateCards:
                     senwe=self.delete_inflected_word(word_to_delete, sense.example) if sense.example else "no example;",
                     question_line=self.question_line(word),
                     sentence_embolden=CreateCards.embolden(word_to_delete, sense.example) + ";" if sense.example else "no example;",
-                    words=word[1]+";",
+                    words=word[0]+";",
                     definition=sense.definition + ";",
                     ipa=sense.ipa + ";",
                     all_senses=CreateCards.embolden(word_to_delete, entries.entry_content().content) + "\n",
@@ -128,10 +128,13 @@ class CreateCards:
 
     @staticmethod
     def question_line(word):
-        if word[1] == 'X':
-            return "...;"
+        if len(word) == 2:
+            if word[1] == 'X':
+                return "...;"
+            else:
+                return word[1]+";"
         else:
-            return word[1]+";"
+            return "question line was not provided;"
 
     @staticmethod
     def embolden(word, text):
