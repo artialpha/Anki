@@ -167,16 +167,25 @@ class CreateCards:
 
     def get_phrases(self, list_of_words):
         results = [self.api.word_json(word) for word in list_of_words]
-        entries = [entry.LexicalEntry(result).phrases() for result in results]
+        entries = [entry.LexicalEntry(result)for result in results]
         text = ''
+        no_result = ''
 
-        for e in entries:
+        entries = [ent.create_senses() for ent in entries]
+        entries_text = [ent.phrases() for ent in entries]
+
+        for ent in entries:
+            if ent.no_result:
+                no_result += ent.no_result + '\n'
+
+        for e in entries_text:
             if not isinstance(e, str):
                 for phrase in e:
                     text += '<div>' + phrase[0] + '</div>'
                     text += '<hr>'
             else:
                 text += '<div>' + e + '</div>'
-        return {'text': text, 'message': 'there are no phrases for this entry'}
+
+        return {'text': text, 'message': no_result}
 
 
