@@ -183,8 +183,6 @@ class CreateCards:
                 for phrase in e:
                     text += '<div>' + phrase[0] + '</div>'
                     text += '<hr>'
-            else:
-                text += '<div>' + e + '</div>'
 
         return {'text': text, 'message': no_result}
 

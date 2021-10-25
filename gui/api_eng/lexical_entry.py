@@ -71,3 +71,6 @@ class LexicalEntry:
             return [[unquote(lxe['id']), self.results['id']] for lxe in self.results["results"][0]['lexicalEntries'][0]['phrases']]
         except TypeError:
             return self.results
+        except KeyError:
+            self.no_result = "no phrases for:" + self.results['id']
+            return self.no_result
